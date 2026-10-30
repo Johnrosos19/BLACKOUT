@@ -1,0 +1,83 @@
+# =============================================================================
+#  BLACKOUT - level 1                         (edit freely, no rebuild needed)
+#  Lines starting with # are comments.  One directive per line.
+#  Coordinates: x to the right, y up, z toward the viewer at the start.  Units = metres.
+#  A malformed line is skipped and reported as  file:line: message  in the console.
+# =============================================================================
+
+window 1280 720
+sky proc:night
+
+# ---- moonlight: direction the light TRAVELS, colour, ambient, diffuse -------------
+dirlight  -0.4 -0.7 -0.5   0.55 0.65 1.0   0.10 0.22
+
+# ---- bulbs ------------------------------------------------------------------------
+# att = exponent*d*d + linear*d + constant   (same formula in shader.frag and LitTest.cpp)
+attenuation 1.0 0.12 0.08
+bulbrange   25.0
+omnibias    0.10
+shadowres   1024 2048
+
+# alarm <fill per second> <drain per second> <lit threshold (illumination units)>
+alarm 0.55 0.30 0.15
+speedstep 1.2
+
+# flashlight <r g b> <cone half-angle degrees> <intensity> <on at start 0/1>
+flashlight 1.0 0.95 0.8  22 1.2 1
+
+# ---- materials: name texture specular shininess r g b emissive tileSize ------------
+# texture is  proc:<name>  (asphalt concrete brick metal wood hazard exitpad)  or a .bmp/.ppm path
+material asphalt   proc:asphalt   0.05  4    1.0 1.0 1.0  0.0  4.0
+material concrete  proc:concrete  0.10  8    1.0 1.0 1.0  0.0  4.0
+material brick     proc:brick     0.15  16   1.0 1.0 1.0  0.0  4.0
+material metal     proc:metal     0.90  64   1.0 1.0 1.0  0.0  4.0
+material wood      proc:wood      0.20  12   1.0 1.0 1.0  0.0  3.0
+material hazard    proc:hazard    0.30  24   1.0 1.0 1.0  0.0  2.0
+
+# ---- geometry: box name material cx cy cz sx sy sz solid castShadow ---------------
+# 'solid' blocks the player.  'castShadow' puts it in the cube maps AND makes it block
+# light in the CPU lit-test, so the picture and the game always use the same level.
+box floor     asphalt  0 -0.5 0    34 1 34     0 1
+
+# outer walls
+box wall_n    brick    0 1.5 -15.5  32 3 1     1 1
+box wall_s    brick    0 1.5  15.5  32 3 1     1 1
+box wall_w    brick   -15.5 1.5 0   1 3 32     1 1
+box wall_e    brick    15.5 1.5 0   1 3 32     1 1
+
+# tall pillars (long shadows)
+box pillar_1  concrete -8   1.6  5    0.9 3.2 0.9   1 1
+box pillar_2  concrete  0   1.6  5    0.9 3.2 0.9   1 1
+box pillar_3  concrete  8   1.6  5    0.9 3.2 0.9   1 1
+box pillar_4  concrete -4   1.6 -12   0.9 3.2 0.9   1 1
+box pillar_5  concrete -12  1.6 -4    0.9 3.2 0.9   1 1
+box pillar_6  concrete  12  1.6 -3    0.9 3.2 0.9   1 1
+
+# shipping containers
+box cont_1    metal    -5   1.5  10    5.0 3 2.4    1 1
+box cont_2    metal     6   1.5  10    2.4 3 5.0    1 1
+box cont_3    metal     8   1.5 -9     5.0 3 2.4    1 1
+
+# brick walls
+box bwall_1   brick    -7   1.4 -1     7.0 2.8 0.6  1 1
+box bwall_2   brick     3   1.4 -4     0.6 2.8 7.0  1 1
+
+# low wooden crates and hazard barriers
+box crate_1   wood    -11   0.6  3     2 1.2 2      1 1
+box crate_2   wood     11   0.6  1     2 1.2 2      1 1
+box crate_3   wood     -2   0.6 -6     2 1.2 2      1 1
+box crate_4   wood     -9   0.6  11    2 1.2 2      1 1
+box crate_5   wood      9   0.6 -6     2 1.2 2      1 1
+box barrier_1 hazard  -10   0.55 -8    4 1.1 0.6    1 1
+box barrier_2 hazard    1   0.55 -11   4 1.1 0.6    1 1
+
+# ---- bulbs: name r g b height intensity speed  x z [x z ...]  (closed loop; one point = static lamp)
+bulb patrol_a  1.0 0.85 0.60  4.0 1.7 2.6    10 -10  -10 -10  -10 10  10 10
+bulb patrol_b  0.70 0.80 1.0  4.0 1.7 2.2    -10 -9  10 -9  10 9  -10 9
+bulb lamp_yard 0.90 1.0 0.80  4.5 1.2 0      -6 -6
+bulb lamp_exit 1.0 0.90 0.60  4.5 1.4 0       8 -4
+
+# ---- player, exit, level bounds ---------------------------------------------------
+player -12.5 12.5
+exit    12.5 -12.5  1.3
+bounds -15 -15 15 15
